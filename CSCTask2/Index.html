@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Product App</title>
+</head>
+<body>
+
+    <div>
+        <h2>All Products</h2>
+        <ul id="products" />
+    </div>
+    <div>
+        <h2>Search by ID</h2>
+        <input type="text" id="prodId" size="5" />
+        <input type="button" value="Search" onclick="find();" />
+        <input type="button" value="Delete" onclick="deleteItem();" />
+        <p id="product" />
+    </div>
+    <div>
+        <h2>Create Product</h2>
+        <input type="text" id="productName" placeholder="Product Name" />
+        <br />
+        <input type="text" id="productCategory" placeholder="Product Category" />
+        <br />
+        <input type="number" id="productPrice" placeholder="Product Price" />
+        <br />
+        <input type="button" value="Create" onclick="create();" />
+        <p id="createDesc" />
+    </div>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
+    <script>
+
+        var uri = 'api/v3/products';
+        //var id = $('#prodId').val();
+
+        $(document).ready(function () {
+            // Send an AJAX request
+            $.getJSON(uri)
+                .done(function (data) {
+                    // On success, 'data' contains a list of products.
+                    $.each(data, function (key, item) {
+                        // Add a list item for the product.
+                        $('<li>', { text: formatItem(item) }).appendTo($('#products'));
+                    });
+                });
+        });
+
+        function formatItem(item) {
+            return item.Name + ': $' + item.Price;
+        }
+
+        function find() {
+            var id = $('#prodId').val();
+
+            $.getJSON(uri + '/' + id)
+                .done(function (data) {
+                    $('#product').text(formatItem(data))
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    $('#product').text('Error: ' + err);
+                });
+        }
+
+        function deleteItem() {
+            var id = $('#prodId').val();
+
+            $.ajax({
+                method: 'DELETE',
+                url: uri + '/' + id
+            }).done(function (data) {
+                $('#product').text('Delete successful');
+            }).fail(function (jqXHR, textStatus, err) {
+                $('#product').text('Error: ' + err);
+            });
+        }
+
+        function create() {
+            let collectedProductName = $('#productName').val();
+            let collectedProductCategory = $('#productCategory').val();
+            let collectedProductPrice = $('#productPrice').val();
+
+            $.post(uri,
+                {
+                    Name: collectedProductName,
+                    Category: collectedProductCategory,
+                    Price: collectedProductPrice
+                }).done(function (data) {
+                    $('#createDesc').text('Product successfully created')
+                }).fail(function (jqXHR, textStatus, err) {
+                    $('#createDesc').text('Error: ' + err);
+                });
+        }
+    </script>
+</body>
+</html>
